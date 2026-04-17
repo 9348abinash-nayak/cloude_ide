@@ -4,8 +4,8 @@ let socket: any = null;
 
 export const initsocket = async () => {
   if (!socket) {
-   io("https://cloude-backend.onrender.com", {
-  transports: ["websocket"],
+const socket = io("https://cloude-backend.onrender.com", {
+  transports: ["websocket", "polling"], // ✅ important
   reconnectionAttempts: Infinity,
   timeout: 10000,
 });
