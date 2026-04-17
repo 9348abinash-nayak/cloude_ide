@@ -4,11 +4,11 @@ let socket: any = null;
 
 export const initsocket = async () => {
   if (!socket) {
-    socket = io("http://localhost:8000", {
-      transports: ["websocket"],
-      reconnectionAttempts: Infinity, // ✅ correct
-      timeout: 10000,
-    });
+   io("https://cloude-backend.onrender.com", {
+  transports: ["websocket"],
+  reconnectionAttempts: Infinity,
+  timeout: 10000,
+});
 
     console.log("✅ NEW SOCKET CREATED");
   } else {

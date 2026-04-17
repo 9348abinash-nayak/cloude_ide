@@ -359,7 +359,7 @@ const sendMessage = () => {
 
   const handleLockRoom = async () => {
     try {
-      const response = await fetch("http://localhost:8000/room/locked", {
+      const response = await fetch("https://cloude-backend.onrender.com/room/locked", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomId }),
@@ -396,7 +396,7 @@ const sendMessage = () => {
     setIsLoading(true);
     setOutput("Running code...");
     try {
-      const response = await fetch("http://localhost:8000/code/run", {
+      const response = await fetch("https://cloude-backend.onrender.com/code/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomId, code, language, input: "" }),
