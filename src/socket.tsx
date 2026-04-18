@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
+import { Socket } from "socket.io-client";
 
-let socket: any = null;
+let socket: Socket | null = null;
 
-export const initsocket = async () => {
+export const initsocket = () => {
   if (!socket) {
     socket = io("https://cloude-backend.onrender.com", {
       transports: ["websocket", "polling"],
