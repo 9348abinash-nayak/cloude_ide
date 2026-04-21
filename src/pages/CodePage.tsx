@@ -662,6 +662,7 @@ const sendMessage = () => {
               </button>
             )}
             {/* Share/Invite Action */}
+             {isCreator && (
             <button
               onClick={handleShare}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${
@@ -673,6 +674,7 @@ const sendMessage = () => {
               {copied ? <CheckCircle2 size={16} /> : <Share2 size={16} />}
               {copied ? "Copied" : "Invite"}
             </button>
+            )}
           </div>
         </div>
 
