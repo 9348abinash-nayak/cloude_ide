@@ -115,7 +115,8 @@ const features = [
   {
     icon: Brain,
     title: "AI-Powered Learning",
-    description: "Learn with the help of advanced AI that adapts to your pace and style.",
+    description:
+      "Learn with the help of advanced AI that adapts to your pace and style.",
   },
   {
     icon: Code2,
@@ -136,7 +137,7 @@ export default function HomePage() {
   // Modal and Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // "create" or "join"
-  
+
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("display_name") || "";
   });
@@ -147,7 +148,7 @@ export default function HomePage() {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const sharedRoomId = queryParams.get("room");
-    
+
     if (sharedRoomId) {
       setRoomIdInput(sharedRoomId);
       setModalMode("join");
@@ -155,8 +156,8 @@ export default function HomePage() {
     }
   }, [location]);
   if (modalMode === "create") {
-  localStorage.setItem("room_creator", userName); // 👈 store creator
-}
+    localStorage.setItem("room_creator", userName); // 👈 store creator
+  }
 
   const openModal = (mode) => {
     setModalMode(mode);
@@ -168,19 +169,21 @@ export default function HomePage() {
     if (!userName.trim()) return;
 
     // Set endpoint and body based on the mode
-    const endpoint = modalMode === "create" 
-      ? "http://localhost:8000/room/create" 
-      : "http://localhost:8000/room/join";
+    const endpoint =
+      modalMode === "create"
+        ? "https://cloude-backend.onrender.com/room/create"
+        : "https://cloude-backend.onrender.com/room/join";
 
- const body = modalMode === "create"
-  ? {
-      language: selectedLanguage,
-      user: {
-        name: userName,
-        color: "#ff4d4f"
-      }
-    }
-  : { roomId: roomIdInput };
+    const body =
+      modalMode === "create"
+        ? {
+            language: selectedLanguage,
+            user: {
+              name: userName,
+              color: "#ff4d4f",
+            },
+          }
+        : { roomId: roomIdInput };
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -192,11 +195,12 @@ export default function HomePage() {
 
       if (response.ok) {
         // Safe access to the Room ID from either response type
-        const finalRoomId = data.room?.roomId || data.roomId || data.id || roomIdInput;
+        const finalRoomId =
+          data.room?.roomId || data.roomId || data.id || roomIdInput;
 
         if (finalRoomId) {
           localStorage.setItem("display_name", userName);
-          
+
           navigate(`/code/${finalRoomId}`, {
             state: {
               name: userName,
@@ -232,11 +236,12 @@ export default function HomePage() {
             <span>The Future of Coding Education</span>
           </motion.div>
 
-         <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-tight pb-2 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
+          <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-tight pb-2 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
             Smart Coding Station
           </h1>
           <p className="text-xl text-white/70 mb-12 max-w-3xl mx-auto">
-            Experience a revolutionary way to learn programming with our AI-powered platform.
+            Experience a revolutionary way to learn programming with our
+            AI-powered platform.
           </p>
 
           <div className="flex items-center justify-center gap-4 flex-wrap">
@@ -313,11 +318,13 @@ export default function HomePage() {
 
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-[#00ff88]">
-                  {modalMode === "create" ? "Create Workspace" : "Join Workspace"}
+                  {modalMode === "create"
+                    ? "Create Workspace"
+                    : "Join Workspace"}
                 </h2>
                 <p className="text-sm text-white/50">
-                  {modalMode === "create" 
-                    ? "Set up a new room to start coding." 
+                  {modalMode === "create"
+                    ? "Set up a new room to start coding."
                     : "Enter the Room ID and your name to join."}
                 </p>
               </div>
@@ -340,7 +347,7 @@ export default function HomePage() {
                   </div>
                 )}
 
-             {modalMode === "create" && (
+                {modalMode === "create" && (
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">
                       Select Language
