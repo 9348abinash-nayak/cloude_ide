@@ -169,8 +169,8 @@ export default function HomePage() {
 
     // Set endpoint and body based on the mode
     const endpoint = modalMode === "create" 
-      ? "https://cloude-backend.onrender.com/room/create" 
-      : "https://cloude-backend.onrender.com/room/join";
+      ? "http://localhost:8000/room/create" 
+      : "http://localhost:8000/room/join";
 
  const body = modalMode === "create"
   ? {
@@ -201,6 +201,7 @@ export default function HomePage() {
             state: {
               name: userName,
               language: data.room?.language || selectedLanguage,
+              joined: true,
             },
           });
         }

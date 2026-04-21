@@ -64,6 +64,7 @@ export default function CodePage() {
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const isCollab = location.state?.joined === true;
   const dropdownRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const hasJoined = useRef(false);
@@ -253,6 +254,8 @@ useEffect(() => {
   setCursors([]);
   setMessages([]);
 
+  if (!isCollab) return;
+
   const init = () => {
     if (isSocketInit.current) return;
 
@@ -262,10 +265,11 @@ useEffect(() => {
     socketRef.current = socket;
     isSocketInit.current = true;
 
-    // ✅ JOIN
-    socket.emit(ACTION.JOIN, {
-      roomId,
-      user: { name: username, color: "#ff4d4f" },
+    socket.on("connect", () => {
+      socket.emit(ACTION.JOIN, {
+        roomId,
+        user: { name: username, color: "#ff4d4f" },
+      });
     });
 
     // USERS
@@ -382,10 +386,8 @@ useEffect(() => {
     const socket = socketRef.current;
 
     if (socket) {
-      socket.off("user-tab-active");
-      socket.off("user-tab-inactive");
-      socket.off("cursor-update");
-      socket.off("code-change");
+      socket.off();
+      socket.disconnect();
     }
 
     document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -422,11 +424,14 @@ const handleMovecoursor = (pos) => {
 
   const handleLeaveRoom = () => {
     const socket = socketRef.current;
-    if (!socket) return;
+    if (!socket) {
+      navigate("/");
+      return;
+    }
 
     isLeaving.current = true;
 
-    socket.emit("leave-room", null, () => {
+    socket.emit("leave-room", {}, () => {
       socket.disconnect();
       socketRef.current = null;
 
@@ -451,41 +456,8 @@ const handleMovecoursor = (pos) => {
       toast.error("Failed to copy link");
     }
   };
-//   const handleShare = async () => {
-//   const link = `${window.location.origin}/code/${roomId}`;
-//   const message = `Join my coding room: ${link}`;
 
-//   try {
-//     // ✅ Native share popup (mobile + some desktop browsers)
-//     if (navigator.share) {
-//       await navigator.share({
-//         title: "Join Room",
-//         text: message,
-//         url: link,
-//       });
-//     } else {
-//       // ❗ Fallback (if not supported)
-//       navigator.clipboard.writeText(link);
-//       setCopied(true);
-//       setTimeout(() => setCopied(false), 2000);
-//       alert("Link copied! You can paste it anywhere.");
-//     }
-//   } catch (error) {
-//     console.log("Share cancelled or failed", error);
-//   }
-// };
 
-  // const sendMessage = () => {
-  // if (!chatInput.trim()) return;
-
-  // const msgData = {
-  //   roomId,
-  //   message: chatInput,
-  //   user: {
-  //     name: displayName,
-  //     color: "#ff4d4f",
-  //   },
-  // };
 const sendMessage = () => {
   if (!chatInput.trim()) return;
 
@@ -515,8 +487,7 @@ const sendMessage = () => {
 
       if (response.ok) {
         toast.success("Room has been locked successfully!");
-        // Optional: navigate or update local state if needed
-        // navigate('/lockroom');
+
       } else {
         toast.error(result.message || "Failed to lock the room");
       }
@@ -614,8 +585,8 @@ const sendMessage = () => {
                 </span>
               </h1>
               <p className="text-[10px] text-white/40 uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse" />
-                Live Session
+                <div className={`w-1.5 h-1.5 rounded-full ${isCollab ? "bg-[#00ff88] animate-pulse" : "bg-white/20"}`} />
+                {isCollab ? "Live Session" : "Solo Mode"}
               </p>
 
               <div className="inline-flex items-center gap-2 mt-1.5 py-1 px-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full shadow-inner">
@@ -640,40 +611,45 @@ const sendMessage = () => {
               {theme === "vs-dark" ? "🌙 Dark" : "☀️ Light"}
             </button>
             {/* Dynamic Avatars (Replaced Person Icon) */}
-            <div className="flex items-center gap-2 pl-2">
-              <span className="text-[10px] font-black uppercase text-white/20 tracking-tighter mr-1">
-                Users
-              </span>
-              <div className="flex -space-x-2.5">
-                {user.map((u, i) => {
-                  const initials = u.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase();
-                  return (
-                    <motion.div
-                      key={u.socketId || i}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      whileHover={{ y: -4, zIndex: 50 }}
-                      title={u.name}
-                      className="relative h-10 w-10 rounded-full border-2 border-[#0a0a0a] flex items-center justify-center text-xs font-black shadow-xl cursor-pointer transition-all"
-                      style={{
-                        backgroundColor: u.color,
-                        color: "#000",
-                        boxShadow: `0 0 15px ${u.color}33`, // Subtle glow in user's color
-                      }}
-                    >
-                      {initials}
-                      {/* Online Status Dot on each Avatar */}
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#00ff88] border-2 border-[#0a0a0a] rounded-full" />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
+            {isCollab && user.length > 0 && (
+              <div className="flex items-center gap-2 pl-2">
+                <span className="text-[10px] font-black uppercase text-white/20 tracking-tighter mr-1">
+                  Users
+                </span>
 
+                <div className="flex -space-x-2.5">
+                  {user
+                    .filter((u) => u.name && u.name !== "Guest") 
+                    .map((u, i) => {
+                      const initials = u.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase();
+
+                      return (
+                        <motion.div
+                          key={u.socketId || i}
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          whileHover={{ y: -4, zIndex: 50 }}
+                          title={u.name}
+                          className="relative h-10 w-10 rounded-full border-2 border-[#0a0a0a] flex items-center justify-center text-xs font-black shadow-xl cursor-pointer transition-all"
+                          style={{
+                            backgroundColor: u.color,
+                            color: "#000",
+                            boxShadow: `0 0 15px ${u.color}33`,
+                          }}
+                        >
+                          {initials}
+
+                          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#00ff88] border-2 border-[#0a0a0a] rounded-full" />
+                        </motion.div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
             <div className="w-[1px] h-6 bg-white/10" />
             {/* Lockroom Action */}
             {isCreator && (
@@ -797,51 +773,50 @@ const sendMessage = () => {
                 onCursorMove={handleMovecoursor}
                 editorRef={editorRef} 
               />
-             {cursors.map((c) => {
-  if (c.socketId === socketRef.current?.id) return null;
+              {isCollab &&
+                cursors.map((c) => {
+                  if (c.socketId === socketRef.current?.id) return null;
 
-  return (
-    <div
-      key={c.socketId}
-      style={{
-        position: "absolute",
-        top: c.top,
-        left: c.left,
-        pointerEvents: "none",
-        zIndex: 100,
-        transition: "all 0.1s linear",
-      }}
-    >
-      {/* cursor */}
-      <div
-        style={{
-          width: "2px",
-          height: c.height,
-          background: c.color,
-        }}
-      />
+                  return (
+                    <div
+                      key={c.socketId}
+                      style={{
+                        position: "absolute",
+                        top: c.top,
+                        left: c.left,
+                        pointerEvents: "none",
+                        zIndex: 100,
+                        transition: "all 0.1s linear",
+                      }}
+                    >
+                      {/* cursor */}
+                      <div
+                        style={{
+                          width: "2px",
+                          height: c.height,
+                          background: c.color,
+                        }}
+                      />
 
-      {/* name */}
-      <div
-        style={{
-          position: "absolute",
-          top: -20,
-          left: 0,
-          background: c.color,
-          color: "#fff",
-          fontSize: "11px",
-          padding: "2px 6px",
-          borderRadius: "4px",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {c.name}
-      </div>
-    </div>
-  );
-})}
-                
-              
+                      {/* name */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: -20,
+                          left: 0,
+                          background: c.color,
+                          color: "#fff",
+                          fontSize: "11px",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {c.name}
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
             {/* <button
               onClick={compileAndRun}
@@ -870,58 +845,60 @@ const sendMessage = () => {
             </div>
 
             {/* CHAT */}
-            <div className="bg-[#111] p-5 rounded-2xl h-[400px] flex flex-col border border-white/5 shadow-xl">
-              <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
-                Live Chat
-              </h3>
-              <div
-                ref={chatContainerRef}
-                className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar"
-              >
-                {messages.map((msg, i) => {
-                  const isMe = msg.user?.name === displayName;
+            {isCollab && (
+              <div className="bg-[#111] p-5 rounded-2xl h-[400px] flex flex-col border border-white/5 shadow-xl">
+                <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+                  Live Chat
+                </h3>
+                <div
+                  ref={chatContainerRef}
+                  className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar"
+                >
+                  {messages.map((msg, i) => {
+                    const isMe = msg.user?.name === displayName;
 
-                  return (
-                    <div
-                      key={i}
-                      className={`flex flex-col ${
-                        isMe ? "items-end" : "items-start"
-                      }`}
-                    >
-                      <span className="text-[#00ff88] text-[9px] font-bold uppercase mb-1 opacity-60">
-                        {msg.user?.name}
-                      </span>
-
+                    return (
                       <div
-                        className={`max-w-[80%] p-2 rounded-xl text-sm border ${
-                          isMe
-                            ? "bg-[#00ff88]/10 border-[#00ff88]/20 text-white"
-                            : "bg-white/5 border-white/5 text-white/80"
+                        key={i}
+                        className={`flex flex-col ${
+                          isMe ? "items-end" : "items-start"
                         }`}
                       >
-                        {msg.message}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                        <span className="text-[#00ff88] text-[9px] font-bold uppercase mb-1 opacity-60">
+                          {msg.user?.name}
+                        </span>
 
-              <div className="flex gap-2 mt-4 bg-black/40 p-1.5 rounded-xl border border-white/10 focus-within:border-[#00ff88]/50 transition-all">
-                <input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-transparent px-2 py-1.5 rounded text-sm focus:outline-none"
-                />
-                <button
-                  onClick={sendMessage}
-                  className="bg-[#00ff88] text-black p-2 rounded-lg hover:bg-[#00cc6e] transition-colors"
-                >
-                  <Send size={16} />
-                </button>
+                        <div
+                          className={`max-w-[80%] p-2 rounded-xl text-sm border ${
+                            isMe
+                              ? "bg-[#00ff88]/10 border-[#00ff88]/20 text-white"
+                              : "bg-white/5 border-white/5 text-white/80"
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-2 mt-4 bg-black/40 p-1.5 rounded-xl border border-white/10 focus-within:border-[#00ff88]/50 transition-all">
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-transparent px-2 py-1.5 rounded text-sm focus:outline-none"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    className="bg-[#00ff88] text-black p-2 rounded-lg hover:bg-[#00cc6e] transition-colors"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
