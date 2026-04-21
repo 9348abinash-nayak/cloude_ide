@@ -445,17 +445,42 @@ const handleMovecoursor = (pos) => {
     });
   };
 
+  // const handleShare = async () => {
+  //   try {
+  //     const shareUrl = `${window.location.origin}/?room=${roomId}`;
+  //     await navigator.clipboard.writeText(shareUrl);
+  //     setCopied(true);
+  //     toast.success("Link copied to clipboard!");
+  //     setTimeout(() => setCopied(false), 2000);
+  //   } catch (err) {
+  //     toast.error("Failed to copy link");
+  //   }
+  // };
+
+
   const handleShare = async () => {
-    try {
-      const shareUrl = `${window.location.origin}/?room=${roomId}`;
-      await navigator.clipboard.writeText(shareUrl);
+  const link = `${window.location.origin}/code/${roomId}`;
+  const message = `Join my coding room: ${link}`;
+
+  try {
+    // ✅ Native share popup (mobile + some desktop browsers)
+    if (navigator.share) {
+      await navigator.share({
+        title: "Join Room",
+        text: message,
+        url: link,
+      });
+    } else {
+      // ❗ Fallback (if not supported)
+      navigator.clipboard.writeText(link);
       setCopied(true);
-      toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error("Failed to copy link");
+      alert("Link copied! You can paste it anywhere.");
     }
-  };
+  } catch (error) {
+    console.log("Share cancelled or failed", error);
+  }
+};
 
 
 const sendMessage = () => {

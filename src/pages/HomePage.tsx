@@ -236,7 +236,7 @@ export default function HomePage() {
             <span>The Future of Coding Education</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-tight pb-2 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
+          <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-tight pb-4 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
             Smart Coding Station
           </h1>
           <p className="text-xl text-white/70 mb-12 max-w-3xl mx-auto">
