@@ -467,8 +467,8 @@ const handleMovecoursor = (pos) => {
     if (navigator.share) {
       await navigator.share({
         title: "Join Room",
-        // text: message,
-       text: `Join my coding room: ${link}`,
+        text: message,
+        url: link,
       });
     } else {
       await navigator.clipboard.writeText(link);
