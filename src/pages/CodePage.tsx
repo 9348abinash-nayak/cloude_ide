@@ -655,7 +655,7 @@ const isCreator = creator === username;
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
                 </span>
                 <span className="text-[10px] font-bold text-white/60 tracking-widest uppercase">
-                  {username}
+              {isCollab ? username : "Guest"}
                 </span>
               </div>
             </div>
