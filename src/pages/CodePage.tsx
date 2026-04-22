@@ -94,6 +94,7 @@ export default function CodePage() {
 const editorRef = useRef<any>(null);
    const lastStateRef = useRef(document.visibilityState);
 const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const [isLocked, setIsLocked] = useState(false);
   // ================= SOCKET =================
 //   useEffect(() => {
 //     setUser([]);
@@ -459,11 +460,10 @@ const handleMovecoursor = (pos) => {
 
 
   const handleShare = async () => {
-  const link = `${window.location.origin}/code/${roomId}`;
+  const link = `${window.location.origin}/?room=${roomId}`;
   const message = `Join my coding room: ${link}`;
 
   try {
-    // ✅ Native share popup (mobile + some desktop browsers)
     if (navigator.share) {
       await navigator.share({
         title: "Join Room",
@@ -471,8 +471,7 @@ const handleMovecoursor = (pos) => {
         url: link,
       });
     } else {
-      // ❗ Fallback (if not supported)
-      navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       alert("Link copied! You can paste it anywhere.");
@@ -500,26 +499,79 @@ const sendMessage = () => {
   setChatInput("");
 };
 
+  // const handleLockRoom = async () => {
+  //   try {
+  //     const response = await fetch("https://cloude-backend.onrender.com/room/locked", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ roomId }),
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (response.ok) {
+  //       toast.success("Room has been locked successfully!");
+
+  //     } else {
+  //       toast.error(result.message || "Failed to lock the room");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Server connection error");
+  //   }
+  // };
+  
   const handleLockRoom = async () => {
+  try {
+    const endpoint = isLocked
+      ? "https://cloude-backend.onrender.com/room/unlocked"   // 👈 unlock API
+      : "https://cloude-backend.onrender.com/room/locked";    // 👈 lock API
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      setIsLocked(!isLocked);
+
+      toast.success(
+        isLocked
+          ? "Room unlocked successfully!"
+          : "Room locked successfully!"
+      );
+    } else {
+      toast.error(result.message || "Failed to update room state");
+    }
+  } catch (error) {
+    toast.error("Server connection error");
+  }
+};
+
+
+useEffect(() => {
+  const fetchStatus = async () => {
     try {
-      const response = await fetch("https://cloude-backend.onrender.com/room/locked", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId }),
-      });
+      const res = await fetch(
+        `https://cloude-backend.onrender.com/room/status?roomId=${roomId}`
+      );
+      const data = await res.json();
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.success("Room has been locked successfully!");
-
-      } else {
-        toast.error(result.message || "Failed to lock the room");
+      if (res.ok) {
+        setIsLocked(data.locked);
       }
-    } catch (error) {
-      toast.error("Server connection error");
+    } catch (err) {
+      console.error("Failed to fetch lock status");
     }
   };
+
+  fetchStatus();
+}, [roomId]);
+
+
+
   const isLanguageLocked = !!location.state?.language;
   const [theme, setTheme] = useState("vs-dark");
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -620,7 +672,7 @@ const sendMessage = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
                 </span>
                 <span className="text-[10px] font-bold text-white/60 tracking-widest uppercase">
-                  {username}
+                 {isCollab ? username : "Guest"}
                 </span>
               </div>
             </div>
@@ -678,13 +730,17 @@ const sendMessage = () => {
             <div className="w-[1px] h-6 bg-white/10" />
             {/* Lockroom Action */}
             {isCreator && (
-              <button
-                onClick={handleLockRoom}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:border-[#00ff88]/50 rounded-xl transition-all text-sm font-bold text-white/70 hover:text-white"
-              >
-                <Lock size={16} className="text-[#00ff88]" />
-                Lockroom
-              </button>
+             <button
+  onClick={handleLockRoom}
+  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${
+    isLocked
+      ? "bg-red-500/10 border-red-500/30 text-red-400"
+      : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-[#00ff88]/50"
+  }`}
+>
+  <Lock size={16} className={isLocked ? "text-red-400" : "text-[#00ff88]"} />
+  {isLocked ? "Unlock Room" : "Lock Room"}
+</button>
             )}
             {/* Share/Invite Action */}
              {isCreator && (
