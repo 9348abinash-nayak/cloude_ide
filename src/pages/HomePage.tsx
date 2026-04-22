@@ -1,103 +1,3 @@
-// import { motion } from 'framer-motion';
-// import { Sparkles, Rocket, Brain, Code2, Users } from 'lucide-react';
-// import { Link, useNavigate } from 'react-router-dom';
-
-// const features = [
-//   {
-//     icon: Brain,
-//     title: 'AI-Powered Learning',
-//     description: 'Learn with the help of advanced AI that adapts to your pace and style.'
-//   },
-//   {
-//     icon: Code2,
-//     title: 'Interactive Coding',
-//     description: 'Write, compile, and test code directly in your browser.'
-//   },
-//   {
-//     icon: Rocket,
-//     title: 'Instant Feedback',
-//     description: 'Get real-time feedback and suggestions as you code.'
-//   }
-// ];
-
-// export default function HomePage() {
-//   const navigate = useNavigate();
-
-//   const createRoom = () => {
-//     const roomId = Math.random().toString(36).substring(2, 8);
-//     navigate(`/code/${roomId}`);
-//   };
-
-//   return (
-//     <div className="pt-20">
-//       <section className="py-20 px-4">
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="max-w-7xl mx-auto text-center"
-//         >
-//           <motion.div
-//             initial={{ scale: 0.9 }}
-//             animate={{ scale: 1 }}
-//             className="inline-flex items-center space-x-2 bg-[#00ff88]/10 text-[#00ff88] px-6 py-2 rounded-full mb-8"
-//           >
-//             <Sparkles className="w-5 h-5" />
-//             <span>The Future of Coding Education</span>
-//           </motion.div>
-
-//           <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8">
-//             Master Programming with AI
-//           </h1>
-
-//           <p className="text-xl text-white/70 mb-12 max-w-3xl mx-auto">
-//             Experience a revolutionary way to learn programming with our AI-powered platform.
-//           </p>
-
-//           <div className="flex items-center justify-center gap-4 flex-wrap">
-//             <Link to="/lessons">
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 className="px-8 py-3 bg-[#00ff88] text-black font-semibold rounded-lg"
-//               >
-//                 Start Learning
-//               </motion.button>
-//             </Link>
-
-//             <motion.button
-//               whileHover={{ scale: 1.05 }}
-//               onClick={createRoom}
-//               className="px-8 py-3 border border-[#00ff88] text-[#00ff88] rounded-lg flex items-center gap-2"
-//             >
-//               <Users size={18} />
-//               Create Room
-//             </motion.button>
-//           </div>
-//         </motion.div>
-//       </section>
-
-//       <section className="py-20 px-4 bg-black/30">
-//         <div className="max-w-7xl mx-auto">
-//           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-//             {features.map((feature, index) => (
-//               <motion.div
-//                 key={feature.title}
-//                 initial={{ opacity: 0, y: 20 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ delay: index * 0.2 }}
-//                 className="p-6 rounded-lg border border-[#00ff88]/20 bg-black/50"
-//               >
-//                 <feature.icon className="w-12 h-12 text-[#00ff88] mb-4" />
-//                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-//                 <p className="text-white/70">{feature.description}</p>
-//               </motion.div>
-//             ))}
-//           </div>
-//         </div>
-//       </section>
-//     </div>
-//   );
-// }
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -115,8 +15,7 @@ const features = [
   {
     icon: Brain,
     title: "AI-Powered Learning",
-    description:
-      "Learn with the help of advanced AI that adapts to your pace and style.",
+    description: "Learn with the help of advanced AI that adapts to your pace and style.",
   },
   {
     icon: Code2,
@@ -137,7 +36,7 @@ export default function HomePage() {
   // Modal and Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // "create" or "join"
-
+  
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("display_name") || "";
   });
@@ -148,7 +47,7 @@ export default function HomePage() {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const sharedRoomId = queryParams.get("room");
-
+    
     if (sharedRoomId) {
       setRoomIdInput(sharedRoomId);
       setModalMode("join");
@@ -156,8 +55,8 @@ export default function HomePage() {
     }
   }, [location]);
   if (modalMode === "create") {
-    localStorage.setItem("room_creator", userName); // 👈 store creator
-  }
+  localStorage.setItem("room_creator", userName); // 👈 store creator
+}
 
   const openModal = (mode) => {
     setModalMode(mode);
@@ -169,21 +68,19 @@ export default function HomePage() {
     if (!userName.trim()) return;
 
     // Set endpoint and body based on the mode
-    const endpoint =
-      modalMode === "create"
-        ? "https://cloude-backend.onrender.com/room/create"
-        : "https://cloude-backend.onrender.com/room/join";
+    const endpoint = modalMode === "create" 
+      ? "https://cloude-backend.onrender.com/room/create" 
+      : "https://cloude-backend.onrender.com/room/join";
 
-    const body =
-      modalMode === "create"
-        ? {
-            language: selectedLanguage,
-            user: {
-              name: userName,
-              color: "#ff4d4f",
-            },
-          }
-        : { roomId: roomIdInput };
+ const body = modalMode === "create"
+  ? {
+      language: selectedLanguage,
+      user: {
+        name: userName,
+        color: "#ff4d4f"
+      }
+    }
+  : { roomId: roomIdInput };
     try {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -195,20 +92,24 @@ export default function HomePage() {
 
       if (response.ok) {
         // Safe access to the Room ID from either response type
-        const finalRoomId =
-          data.room?.roomId || data.roomId || data.id || roomIdInput;
+        const finalRoomId = data.room?.roomId || data.roomId || data.id || roomIdInput;
 
         if (finalRoomId) {
-          localStorage.setItem("display_name", userName);
+  localStorage.setItem("display_name", userName);
 
-          navigate(`/code/${finalRoomId}`, {
-            state: {
-              name: userName,
-              language: data.room?.language || selectedLanguage,
-              joined: true,
-            },
-          });
-        }
+  // ✅ store creator PER ROOM
+  if (modalMode === "create") {
+    localStorage.setItem(`room_creator_${finalRoomId}`, userName);
+  }
+
+  navigate(`/code/${finalRoomId}`, {
+    state: {
+      name: userName,
+      language: data.room?.language || selectedLanguage,
+      joined: true,
+    },
+  });
+}
       } else {
         alert(data.message || "Something went wrong. Please try again.");
       }
@@ -236,12 +137,11 @@ export default function HomePage() {
             <span>The Future of Coding Education</span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-tight pb-4 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
+         <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00ff88] to-[#00ffff] mb-8 leading-[1.2] pb-4 transition-all duration-300 hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.9)] hover:scale-105 py-6">
             Smart Coding Station
           </h1>
           <p className="text-xl text-white/70 mb-12 max-w-3xl mx-auto">
-            Experience a revolutionary way to learn programming with our
-            AI-powered platform.
+            Experience a revolutionary way to learn programming with our AI-powered platform.
           </p>
 
           <div className="flex items-center justify-center gap-4 flex-wrap">
@@ -318,13 +218,11 @@ export default function HomePage() {
 
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-[#00ff88]">
-                  {modalMode === "create"
-                    ? "Create Workspace"
-                    : "Join Workspace"}
+                  {modalMode === "create" ? "Create Workspace" : "Join Workspace"}
                 </h2>
                 <p className="text-sm text-white/50">
-                  {modalMode === "create"
-                    ? "Set up a new room to start coding."
+                  {modalMode === "create" 
+                    ? "Set up a new room to start coding." 
                     : "Enter the Room ID and your name to join."}
                 </p>
               </div>
@@ -347,7 +245,7 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {modalMode === "create" && (
+             {modalMode === "create" && (
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">
                       Select Language

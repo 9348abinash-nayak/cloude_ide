@@ -87,314 +87,333 @@ export default function CodePage() {
   const [cursors, setCursors] = useState<any[]>([]);
   const [user, setUser] = useState<UserType[]>([]);
   // const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const creator = localStorage.getItem("room_creator");
-  const isCreator = creator === username;
+ const creator = localStorage.getItem(`room_creator_${roomId}`);
+const isCreator = creator === username;
   const isLeaving = useRef(false);
   const isSocketInit = useRef(false);
-const editorRef = useRef<any>(null);
-   const lastStateRef = useRef(document.visibilityState);
-const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const [isLocked, setIsLocked] = useState(false);
+  const editorRef = useRef<any>(null);
+  const lastStateRef = useRef(document.visibilityState);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
   // ================= SOCKET =================
-//   useEffect(() => {
-//     setUser([]);
-//     setCursors([]);
-//     setMessages([]);
+  //   useEffect(() => {
+  //     setUser([]);
+  //     setCursors([]);
+  //     setMessages([]);
 
-//     const init = async () => {
+  //     const init = async () => {
 
-//            const socket = await initsocket();
-//       socketRef.current = socket;
-//       if (isSocketInit.current) return;
-//       isSocketInit.current = true;
-
- 
-
-//       socket.emit(ACTION.JOIN, {
-//         roomId,
-//         user: { name: username, color: "#ff4d4f" },
-//       });
-//       socket.off("active-users");
-//       socket.on("active-users", (clients) => {
-//         setUser([...clients]);
-//       });
-//       // typing receive
-//       // socket.on("code-change", ({ code }) => {
-//       //   setCode(code);
-//       // });
-//       socket.on("code-change", ({ code }) => {
-//   const editor = editorRef.current;
-//   if (!editor) return;
-
-//   const position = editor.getPosition(); // 👈 save cursor
-
-//   setCode(code);
-
-//   setTimeout(() => {
-//     if (position) {
-//       editor.setPosition(position); // 👈 restore cursor
-//     }
-//   }, 0);
-// });
-
-//       // initial load
-//       socket.on("code-update", (code) => {
-//         setCode(code);
-//       });
-//       socket.emit("load-messages", roomId);
-
-//       socket.off("previous-messages");
-//       socket.on("previous-messages", (msgs) => {
-//         setMessages((prev) => [...prev, ...msgs]);
-//       });
-
-//       socket.off("receive-message");
-//       socket.on("receive-message", (newMessage) => {
-//        if (newMessage.user.name === displayName) return;
-//         setMessages((prev) => [...prev, newMessage]);
-//       });
-
-//       // JOIN
-//       socket.off("user-joined");
-//       socket.on("user-joined", ({ message }) => {
-//         toast.success(message);
-//       });
-//       socket.off("USER_LEFT");
-//       socket.on("USER_LEFT", ({ username }) => {
-//         toast.success(`${username} left`);
-
-//         setCursors((prev) => prev.filter((c) => c.name !== username));
-//       });
-//       //tab-change
-//  socket.off("user-tab-inactive");
-// socket.on("user-tab-inactive", ({ message }) => {
-//   toast(message,{
-//     icon:"⚠️"
-//   });
-// });
-
-// socket.off("user-tab-active");
-// socket.on("user-tab-active", ({ message }) => {
-//   toast.success(message);
-// });
-       
-//       // CURSOR
-//       socket.off("cursor-update");
-//      socket.on("cursor-update", ({ position, user }) => {
-//   if (user.socketId === socketRef.current?.id) return;
-
-//   setCursors((prev) => {
-//     const filtered = prev.filter((c) => c.socketId !== user.socketId);
-
-//     return [
-//       ...filtered,
-//       {
-//         top: position.top,
-//         left: position.left,
-//         height: position.height,
-//         name: user.name,
-//         color: user.color,
-//         socketId: user.socketId,
-//       },
-//     ];
-//   });
-// });
-//     };
-
-//     init();
+  //            const socket = await initsocket();
+  //       socketRef.current = socket;
+  //       if (isSocketInit.current) return;
+  //       isSocketInit.current = true;
 
 
 
-// const handleVisibilityChange = () => {
-//   const socket = socketRef.current;
-//   if (!socket) return;
+  //       socket.emit(ACTION.JOIN, {
+  //         roomId,
+  //         user: { name: username, color: "#ff4d4f" },
+  //       });
+  //       socket.off("active-users");
+  //       socket.on("active-users", (clients) => {
+  //         setUser([...clients]);
+  //       });
+  //       // typing receive
+  //       // socket.on("code-change", ({ code }) => {
+  //       //   setCode(code);
+  //       // });
+  //       socket.on("code-change", ({ code }) => {
+  //   const editor = editorRef.current;
+  //   if (!editor) return;
 
-//   // 🔥 prevent duplicate state
-//   if (document.visibilityState === lastStateRef.current) return;
+  //   const position = editor.getPosition(); // 👈 save cursor
 
-//   lastStateRef.current = document.visibilityState;
+  //   setCode(code);
 
-//   // 🔥 debounce
-//   if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  //   setTimeout(() => {
+  //     if (position) {
+  //       editor.setPosition(position); // 👈 restore cursor
+  //     }
+  //   }, 0);
+  // });
 
-//   timeoutRef.current = setTimeout(() => {
-//     if (document.visibilityState === "hidden") {
-//       socket.emit("tab-inactive", {
-//         roomId,
-//         user: { name: username },
-//       });
-//     } else {
-//       socket.emit("tab-active", {
-//         roomId,
-//         user: { name: username },
-//       });
-//     }
-//   }, 100);
-// };
-//   document.addEventListener("visibilitychange",handleVisibilityChange)
+  //       // initial load
+  //       socket.on("code-update", (code) => {
+  //         setCode(code);
+  //       });
+  //       socket.emit("load-messages", roomId);
 
-//     return () => {
-//       const socket = socketRef.current;
+  //       socket.off("previous-messages");
+  //       socket.on("previous-messages", (msgs) => {
+  //         setMessages((prev) => [...prev, ...msgs]);
+  //       });
 
-//       if (!socket) return;
+  //       socket.off("receive-message");
+  //       socket.on("receive-message", (newMessage) => {
+  //        if (newMessage.user.name === displayName) return;
+  //         setMessages((prev) => [...prev, newMessage]);
+  //       });
 
-//      // socket.removeAllListeners();
-//      socket.off("user-tab-active");
-// socket.off("user-tab-inactive");
-// socket.off("cursor-update");
-// socket.off("code-change");
-//        document.removeEventListener("visibilitychange", handleVisibilityChange);
-//       hasJoined.current = false;
-//       isSocketInit.current = false;
-      
-//     };
-//   }, [roomId]);
+  //       // JOIN
+  //       socket.off("user-joined");
+  //       socket.on("user-joined", ({ message }) => {
+  //         toast.success(message);
+  //       });
+  //       socket.off("USER_LEFT");
+  //       socket.on("USER_LEFT", ({ username }) => {
+  //         toast.success(`${username} left`);
 
-useEffect(() => {
-  setUser([]);
-  setCursors([]);
-  setMessages([]);
+  //         setCursors((prev) => prev.filter((c) => c.name !== username));
+  //       });
+  //       //tab-change
+  //  socket.off("user-tab-inactive");
+  // socket.on("user-tab-inactive", ({ message }) => {
+  //   toast(message,{
+  //     icon:"⚠️"
+  //   });
+  // });
 
-  if (!isCollab) return;
+  // socket.off("user-tab-active");
+  // socket.on("user-tab-active", ({ message }) => {
+  //   toast.success(message);
+  // });
 
-  const init = () => {
-    if (isSocketInit.current) return;
+  //       // CURSOR
+  //       socket.off("cursor-update");
+  //      socket.on("cursor-update", ({ position, user }) => {
+  //   if (user.socketId === socketRef.current?.id) return;
 
-    const socket = initsocket(); // ❌ no await
-    if (!socket) return;
+  //   setCursors((prev) => {
+  //     const filtered = prev.filter((c) => c.socketId !== user.socketId);
 
-    socketRef.current = socket;
-    isSocketInit.current = true;
+  //     return [
+  //       ...filtered,
+  //       {
+  //         top: position.top,
+  //         left: position.left,
+  //         height: position.height,
+  //         name: user.name,
+  //         color: user.color,
+  //         socketId: user.socketId,
+  //       },
+  //     ];
+  //   });
+  // });
+  //     };
 
-    socket.on("connect", () => {
-      socket.emit(ACTION.JOIN, {
-        roomId,
-        user: { name: username, color: "#ff4d4f" },
-      });
-    });
+  //     init();
 
-    // USERS
-    socket.off("active-users");
-    socket.on("active-users", (clients) => {
-      setUser(clients);
-    });
 
-    // CODE CHANGE
-    socket.on("code-change", ({ code }) => {
-      const editor = editorRef.current;
-      if (!editor) return;
 
-      const position = editor.getPosition();
-      setCode(code);
+  // const handleVisibilityChange = () => {
+  //   const socket = socketRef.current;
+  //   if (!socket) return;
 
-      setTimeout(() => {
-        if (position) editor.setPosition(position);
-      }, 0);
-    });
+  //   // 🔥 prevent duplicate state
+  //   if (document.visibilityState === lastStateRef.current) return;
 
-    socket.on("code-update", (code) => {
-      setCode(code);
-    });
+  //   lastStateRef.current = document.visibilityState;
 
-    // MESSAGES
-    socket.emit("load-messages", roomId);
+  //   // 🔥 debounce
+  //   if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-    socket.off("previous-messages");
-    socket.on("previous-messages", (msgs) => {
-      setMessages((prev) => [...prev, ...msgs]);
-    });
+  //   timeoutRef.current = setTimeout(() => {
+  //     if (document.visibilityState === "hidden") {
+  //       socket.emit("tab-inactive", {
+  //         roomId,
+  //         user: { name: username },
+  //       });
+  //     } else {
+  //       socket.emit("tab-active", {
+  //         roomId,
+  //         user: { name: username },
+  //       });
+  //     }
+  //   }, 100);
+  // };
+  //   document.addEventListener("visibilitychange",handleVisibilityChange)
 
-    socket.off("receive-message");
-    socket.on("receive-message", (newMessage) => {
-      if (newMessage.user.name === displayName) return;
-      setMessages((prev) => [...prev, newMessage]);
-    });
+  //     return () => {
+  //       const socket = socketRef.current;
 
-    // JOIN / LEAVE
-    socket.on("user-joined", ({ message }) => {
-      toast.success(message);
-    });
+  //       if (!socket) return;
 
-    socket.on("USER_LEFT", ({ username }) => {
-      toast.success(`${username} left`);
-      setCursors((prev) =>
-        prev.filter((c) => c.name !== username)
-      );
-    });
+  //      // socket.removeAllListeners();
+  //      socket.off("user-tab-active");
+  // socket.off("user-tab-inactive");
+  // socket.off("cursor-update");
+  // socket.off("code-change");
+  //        document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //       hasJoined.current = false;
+  //       isSocketInit.current = false;
 
-    // TAB EVENTS
-    socket.on("user-tab-inactive", ({ message }) => {
-      toast(message, { icon: "⚠️" });
-    });
+  //     };
+  //   }, [roomId]);
 
-    socket.on("user-tab-active", ({ message }) => {
-      toast.success(message);
-    });
-
-    // CURSOR
-    socket.on("cursor-update", ({ position, user }) => {
-      if (user.socketId === socket.id) return;
-
-      setCursors((prev) => {
-        const filtered = prev.filter(
-          (c) => c.socketId !== user.socketId
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(
+          `https://cloude-backend.onrender.com/room/status?roomId=${roomId}`
         );
+        const data = await res.json();
 
-        return [
-          ...filtered,
-          {
-            top: position.top,
-            left: position.left,
-            height: position.height,
-            name: user.name,
-            color: user.color,
-            socketId: user.socketId,
-          },
-        ];
-      });
-    });
-  };
-
-  init();
-
-  // ✅ SAFE VISIBILITY HANDLER
-  const handleVisibilityChange = () => {
-    const socket = socketRef.current;
-
-    if (!socket || !socket.connected) return;
-
-    if (document.visibilityState === lastStateRef.current) return;
-    lastStateRef.current = document.visibilityState;
-
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    timeoutRef.current = setTimeout(() => {
-      socket.emit(
-        document.visibilityState === "hidden"
-          ? "tab-inactive"
-          : "tab-active",
-        {
-          roomId,
-          user: { name: username },
+        if (res.ok) {
+          setIsLocked(data.locked);
         }
-      );
-    }, 100);
-  };
+      } catch (err) {
+        console.error("Failed to fetch lock status");
+      }
+    };
 
-  document.addEventListener("visibilitychange", handleVisibilityChange);
+    fetchStatus();
+  }, [roomId]);
 
-  return () => {
-    const socket = socketRef.current;
+  useEffect(() => {
+    setUser([]);
+    setCursors([]);
+    setMessages([]);
 
-    if (socket) {
-      socket.off();
-      socket.disconnect();
-    }
+    if (!isCollab) return;
 
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-    isSocketInit.current = false;
-  };
-}, [roomId]);
+    const init = () => {
+      if (isSocketInit.current) return;
+
+      const socket = initsocket(); // ❌ no await
+      if (!socket) return;
+
+      socketRef.current = socket;
+      isSocketInit.current = true;
+
+      socket.on("connect", () => {
+        socket.emit(ACTION.JOIN, {
+          roomId,
+          user: { name: username, color: "#ff4d4f" },
+        });
+      });
+
+      // USERS
+      socket.off("active-users");
+      socket.on("active-users", (clients) => {
+        setUser(clients);
+      });
+
+      // CODE CHANGE
+      socket.on("code-change", ({ code }) => {
+        const editor = editorRef.current;
+        if (!editor) return;
+
+        const position = editor.getPosition();
+        setCode(code);
+
+        setTimeout(() => {
+          if (position) editor.setPosition(position);
+        }, 0);
+      });
+
+      socket.on("code-update", (code) => {
+        setCode(code);
+      });
+
+      // MESSAGES
+      socket.emit("load-messages", roomId);
+
+      socket.off("previous-messages");
+      socket.on("previous-messages", (msgs) => {
+        setMessages((prev) => [...prev, ...msgs]);
+      });
+
+      socket.off("receive-message");
+      socket.on("receive-message", (newMessage) => {
+        if (newMessage.user.name === displayName) return;
+        setMessages((prev) => [...prev, newMessage]);
+      });
+
+      // JOIN / LEAVE
+      socket.on("user-joined", ({ message }) => {
+        toast.success(message);
+      });
+
+      socket.on("USER_LEFT", ({ username }) => {
+        toast.success(`${username} left`);
+        setCursors((prev) =>
+          prev.filter((c) => c.name !== username)
+        );
+      });
+
+      // TAB EVENTS
+      socket.on("user-tab-inactive", ({ message }) => {
+        toast(message, { icon: "⚠️" });
+      });
+
+      socket.on("user-tab-active", ({ message }) => {
+        toast.success(message);
+      });
+
+      // CURSOR
+      socket.on("cursor-update", ({ position, user }) => {
+        if (user.socketId === socket.id) return;
+
+        setCursors((prev) => {
+          const filtered = prev.filter(
+            (c) => c.socketId !== user.socketId
+          );
+
+          return [
+            ...filtered,
+            {
+              top: position.top,
+              left: position.left,
+              height: position.height,
+              name: user.name,
+              color: user.color,
+              socketId: user.socketId,
+            },
+          ];
+        });
+      });
+    };
+
+    init();
+
+    // ✅ SAFE VISIBILITY HANDLER
+    const handleVisibilityChange = () => {
+      const socket = socketRef.current;
+
+      if (!socket || !socket.connected) return;
+
+      if (document.visibilityState === lastStateRef.current) return;
+      lastStateRef.current = document.visibilityState;
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+      timeoutRef.current = setTimeout(() => {
+        socket.emit(
+          document.visibilityState === "hidden"
+            ? "tab-inactive"
+            : "tab-active",
+          {
+            roomId,
+            user: { name: username },
+          }
+        );
+      }, 100);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      const socket = socketRef.current;
+
+      if (socket) {
+        socket.off();
+        socket.disconnect();
+      }
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      isSocketInit.current = false;
+    };
+  }, [roomId]);
   // ================= CODE CHANGE =================
   const handleCodeChange = (value: string) => {
     setCode(value);
@@ -406,22 +425,22 @@ useEffect(() => {
   };
 
   // ================= CURSOR SEND =================
-const handleMovecoursor = (pos) => {
-  if (!pos) return;
+  const handleMovecoursor = (pos) => {
+    if (!pos) return;
 
-  socketRef.current?.emit("cursor-move", {
-    roomId,
-    position: {
-      top: pos.top,
-      left: pos.left,
-      height: pos.height,
-    },
-    user: {
-      name: username,
-      color: "#ff4d4f",
-    },
-  });
-};
+    socketRef.current?.emit("cursor-move", {
+      roomId,
+      position: {
+        top: pos.top,
+        left: pos.left,
+        height: pos.height,
+      },
+      user: {
+        name: username,
+        color: "#ff4d4f",
+      },
+    });
+  };
 
   const handleLeaveRoom = () => {
     const socket = socketRef.current;
@@ -446,29 +465,15 @@ const handleMovecoursor = (pos) => {
     });
   };
 
-  // const handleShare = async () => {
-  //   try {
-  //     const shareUrl = `${window.location.origin}/?room=${roomId}`;
-  //     await navigator.clipboard.writeText(shareUrl);
-  //     setCopied(true);
-  //     toast.success("Link copied to clipboard!");
-  //     setTimeout(() => setCopied(false), 2000);
-  //   } catch (err) {
-  //     toast.error("Failed to copy link");
-  //   }
-  // };
-
-
-  const handleShare = async () => {
+ const handleShare = async () => {
   const link = `${window.location.origin}/?room=${roomId}`;
-  const message = `Join my coding room: ${link}`;
 
   try {
     if (navigator.share) {
       await navigator.share({
         title: "Join Room",
-        text: message,
-        url: link,
+        text: "Join my coding room 🚀",
+        url: link, // ✅ only here
       });
     } else {
       await navigator.clipboard.writeText(link);
@@ -482,22 +487,22 @@ const handleMovecoursor = (pos) => {
 };
 
 
-const sendMessage = () => {
-  if (!chatInput.trim()) return;
+  const sendMessage = () => {
+    if (!chatInput.trim()) return;
 
-  const msgData = {
-    roomId,
-    message: chatInput,
-    user: {
-      name: displayName,
-      color: "#ff4d4f",
-    },
+    const msgData = {
+      roomId,
+      message: chatInput,
+      user: {
+        name: displayName,
+        color: "#ff4d4f",
+      },
+    };
+    setMessages((prev) => [...prev, msgData]);
+    socketRef.current?.emit("send-message", msgData);
+
+    setChatInput("");
   };
-  setMessages((prev) => [...prev, msgData]);
-  socketRef.current?.emit("send-message", msgData);
-
-  setChatInput("");
-};
 
   // const handleLockRoom = async () => {
   //   try {
@@ -519,12 +524,13 @@ const sendMessage = () => {
   //     toast.error("Server connection error");
   //   }
   // };
-  
-  const handleLockRoom = async () => {
+
+
+ const handleLockRoom = async () => {
   try {
     const endpoint = isLocked
-      ? "https://cloude-backend.onrender.com/room/unlocked"   // 👈 unlock API
-      : "https://cloude-backend.onrender.com/room/locked";    // 👈 lock API
+      ? "https://cloude-backend.onrender.com/room/unlocked"
+      : "https://cloude-backend.onrender.com/room/locked";
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -549,29 +555,6 @@ const sendMessage = () => {
     toast.error("Server connection error");
   }
 };
-
-
-useEffect(() => {
-  const fetchStatus = async () => {
-    try {
-      const res = await fetch(
-        `https://cloude-backend.onrender.com/room/status?roomId=${roomId}`
-      );
-      const data = await res.json();
-
-      if (res.ok) {
-        setIsLocked(data.locked);
-      }
-    } catch (err) {
-      console.error("Failed to fetch lock status");
-    }
-  };
-
-  fetchStatus();
-}, [roomId]);
-
-
-
   const isLanguageLocked = !!location.state?.language;
   const [theme, setTheme] = useState("vs-dark");
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -599,8 +582,8 @@ useEffect(() => {
       if (result.success) {
         setOutput(
           result.data.output ||
-            result.data.error ||
-            `Status: ${result.data.status}`,
+          result.data.error ||
+          `Status: ${result.data.status}`,
         );
       } else {
         setOutput("Execution Failed");
@@ -672,11 +655,11 @@ useEffect(() => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
                 </span>
                 <span className="text-[10px] font-bold text-white/60 tracking-widest uppercase">
-                 {isCollab ? username : "Guest"}
+                  {username}
                 </span>
               </div>
             </div>
-            
+
           </div>
 
           {/* COLLABORATORS & ACTIONS */}
@@ -696,7 +679,7 @@ useEffect(() => {
 
                 <div className="flex -space-x-2.5">
                   {user
-                    .filter((u) => u.name && u.name !== "Guest") 
+                    .filter((u) => u.name && u.name !== "Guest")
                     .map((u, i) => {
                       const initials = u.name
                         .split(" ")
@@ -730,31 +713,29 @@ useEffect(() => {
             <div className="w-[1px] h-6 bg-white/10" />
             {/* Lockroom Action */}
             {isCreator && (
-             <button
-  onClick={handleLockRoom}
-  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${
-    isLocked
-      ? "bg-red-500/10 border-red-500/30 text-red-400"
-      : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-[#00ff88]/50"
-  }`}
->
-  <Lock size={16} className={isLocked ? "text-red-400" : "text-[#00ff88]"} />
-  {isLocked ? "Unlock Room" : "Lock Room"}
-</button>
+              <button
+                onClick={handleLockRoom}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${isLocked
+                    ? "bg-red-500/10 border-red-500/30 text-red-400"
+                    : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:border-[#00ff88]/50"
+                  }`}
+              >
+                <Lock size={16} className={isLocked ? "text-red-400" : "text-[#00ff88]"} />
+                {isLocked ? "Unlock Room" : "Lock Room"}
+              </button>
             )}
             {/* Share/Invite Action */}
-             {isCreator && (
-            <button
-              onClick={handleShare}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${
-                copied
-                  ? "bg-[#00ff88]/20 border-[#00ff88] text-[#00ff88]"
-                  : "bg-white/10 border-white/10 hover:bg-white/20 text-white"
-              }`}
-            >
-              {copied ? <CheckCircle2 size={16} /> : <Share2 size={16} />}
-              {copied ? "Copied" : "Invite"}
-            </button>
+            {isCreator && (
+              <button
+                onClick={handleShare}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${copied
+                    ? "bg-[#00ff88]/20 border-[#00ff88] text-[#00ff88]"
+                    : "bg-white/10 border-white/10 hover:bg-white/20 text-white"
+                  }`}
+              >
+                {copied ? <CheckCircle2 size={16} /> : <Share2 size={16} />}
+                {copied ? "Copied" : "Invite"}
+              </button>
             )}
           </div>
         </div>
@@ -769,11 +750,10 @@ useEffect(() => {
                     !isLanguageLocked && setIsDropdownOpen(!isDropdownOpen)
                   }
                   className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-all
-  ${
-    isLanguageLocked
-      ? "bg-white/5 border-white/5 text-white/40 cursor-not-allowed"
-      : "bg-white/5 border-white/10 hover:border-[#00ff88]/50"
-  }
+  ${isLanguageLocked
+                      ? "bg-white/5 border-white/5 text-white/40 cursor-not-allowed"
+                      : "bg-white/5 border-white/10 hover:border-[#00ff88]/50"
+                    }
 `}
                 >
                   <span style={{ color: selectedLangData?.color }}>
@@ -820,11 +800,10 @@ useEffect(() => {
                   onClick={compileAndRun}
                   disabled={isLoading}
                   title="Run Code"
-                  className={`p-2.5 rounded-lg flex items-center justify-center transition-all shadow-lg ${
-                    isLoading
+                  className={`p-2.5 rounded-lg flex items-center justify-center transition-all shadow-lg ${isLoading
                       ? "bg-white/10 text-white/40 cursor-not-allowed"
                       : "bg-[#00ff88] text-black hover:bg-[#00cc6e] hover:shadow-[0_0_15px_rgba(0,255,136,0.4)] active:scale-95"
-                  }`}
+                    }`}
                 >
                   {isLoading ? (
                     <div className="w-[18px] h-[18px] border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -854,7 +833,7 @@ useEffect(() => {
                 theme={theme}
                 onChange={(val: string) => handleCodeChange(val || "")}
                 onCursorMove={handleMovecoursor}
-                editorRef={editorRef} 
+                editorRef={editorRef}
               />
               {isCollab &&
                 cursors.map((c) => {
@@ -943,20 +922,18 @@ useEffect(() => {
                     return (
                       <div
                         key={i}
-                        className={`flex flex-col ${
-                          isMe ? "items-end" : "items-start"
-                        }`}
+                        className={`flex flex-col ${isMe ? "items-end" : "items-start"
+                          }`}
                       >
                         <span className="text-[#00ff88] text-[9px] font-bold uppercase mb-1 opacity-60">
                           {msg.user?.name}
                         </span>
 
                         <div
-                          className={`max-w-[80%] p-2 rounded-xl text-sm border ${
-                            isMe
+                          className={`max-w-[80%] p-2 rounded-xl text-sm border ${isMe
                               ? "bg-[#00ff88]/10 border-[#00ff88]/20 text-white"
                               : "bg-white/5 border-white/5 text-white/80"
-                          }`}
+                            }`}
                         >
                           {msg.message}
                         </div>
